@@ -1,62 +1,35 @@
-export interface IResult<T> {
-  ok(): this is OkResult<T>;
-  map<U>(fn: (value: T) => U): IResult<U>;
-  mapErr(fn: (value: Error) => Error): IResult<T>;
-  andThen<U>(fn: (value: T) => IResult<U>): IResult<U>;
-  unwrap(): T;
-  unwrapOr(defaultValue: T): T;
-  unwrapOrElse(defaultValue: T): T;
-}
-
-export class OkResult<T> implements IResult<T> {
+export class OkResult<T> {
   constructor(public readonly value: T) {}
-  ok(): this is OkResult<T> & Exclude<any, ErrResult> {
+  ok(): this is OkResult<T> {
     return true;
   }
-  map<U>(fn: (value: T) => U): IResult<U> {
+  map<U>(fn: (value: T) => U): Result<U> {
     return ok(fn(this.value));
   }
-  mapErr<U>(_fn: (error: Error) => U): IResult<T> {
-    return this;
-  }
-  andThen<U>(fn: (value: T) => IResult<U>): IResult<U> {
+  andThen<U>(fn: (value: T) => Result<U>): Result<U> {
     return fn(this.value);
   }
   unwrap(): T {
     return this.value;
   }
-  unwrapOr(_defaultValue: T): T {
-    return this.value;
-  }
-  unwrapOrElse(_defaultValue: T): T {
-    return this.value;
-  }
 }
-
-export class ErrResult implements IResult<any> {
+export class ErrResult {
   constructor(public readonly error: Error) {}
   ok(): this is OkResult<never> {
     return false;
   }
-  map<U>(_fn: (value: never) => U): IResult<U> {
+  map<U>(_fn: (value: never) => U): Result<U> {
     return this as any;
   }
-  mapErr(fn: (value: Error) => Error): IResult<any> {
-    return err(fn(this.error));
-  }
-  andThen<U>(_fn: (value: never) => IResult<U>): IResult<U> {
+  andThen<U>(_fn: (value: never) => Result<U>): Result<U> {
     return this as any;
   }
   unwrap(): never {
     throw this.error;
   }
-  unwrapOr(defaultValue: any) {
-    return defaultValue;
-  }
-  unwrapOrElse(fn: () => any): any {
-    return fn();
-  }
 }
+
+export type Result<T> = OkResult<T> | ErrResult;
 
 export function ok<T>(value: T): OkResult<T> {
   return new OkResult(value);
@@ -65,5 +38,6 @@ export function ok<T>(value: T): OkResult<T> {
 export function err(error: Error): ErrResult {
   return new ErrResult(error);
 }
-
-export type Result<T> = IResult<T>;
+export function unwrapOr<T>(result: Result<T>, defaultValue: T): T {
+  return result.ok() ? result.value : defaultValue;
+}
