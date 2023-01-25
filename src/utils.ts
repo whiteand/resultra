@@ -1,4 +1,3 @@
-import { T } from "vitest/dist/types-c1386a7d";
 import { Result, err, ok } from "./result";
 
 export function catchError<Params extends any[], R>(

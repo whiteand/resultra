@@ -6,6 +6,7 @@
         "emitDeclarationOnly": true
     },
     "include": [
-        "src/index.ts"
+        "src/index.ts",
+        "src/utils.ts",
     ],
 }
