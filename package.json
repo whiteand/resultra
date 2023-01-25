@@ -42,6 +42,12 @@
       "default": "./dist/utils.js"
     }
   },
+  "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "utils": ["dist/utils.d.ts"],
+    }
+  },
   "author": "andrewbeletskiy",
   "license": "ISC",
   "devDependencies": {
