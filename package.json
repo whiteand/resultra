@@ -1,6 +1,6 @@
 {
   "name": "resultra",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Rust inspired Result type",
   "main": "dist/index.js",
   "scripts": {
@@ -45,7 +45,9 @@
   "types": "dist/index.d.ts",
   "typesVersions": {
     "*": {
-      "utils": ["dist/utils.d.ts"]
+      "utils": [
+        "dist/utils.d.ts"
+      ]
     }
   },
   "author": "andrewbeletskiy",
