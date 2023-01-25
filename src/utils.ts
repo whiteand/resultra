@@ -1,3 +1,4 @@
+import { T } from "vitest/dist/types-c1386a7d";
 import { Result, err, ok } from "./result";
 
 export function catchError<Params extends any[], R>(
@@ -70,4 +71,52 @@ export function fromJsonRpc<T>(data: { error?: any; result?: T }): Result<T> {
 
 export function fromPromise<T>(promise: Promise<T>): Promise<Result<T>> {
   return promise.then(ok, err);
+}
+
+export function parseInt(str: string, base: number): Result<number> {
+  const value = Number.parseInt(str, base);
+  if (Number.isNaN(value)) {
+    return err(new Error(`Failed to parse "${str}" as number`));
+  }
+  return ok(value);
+}
+
+export function parseFloat(str: string): Result<number> {
+  const value = Number.parseFloat(str);
+  if (Number.isNaN(value)) {
+    return err(new Error(`Failed to parse "${str}" as number`));
+  }
+  return ok(value);
+}
+
+export function assert<T>(
+  value: T | false | 0 | "" | null | undefined,
+  errorMessage: string
+): Result<T> {
+  if (value) {
+    return ok(value as T);
+  } else {
+    return err(new Error(errorMessage));
+  }
+}
+export function validate<T>(
+  value: T,
+  validator: (value: any) => boolean,
+  errorMessage: string
+): Result<T>;
+export function validate<T, U>(
+  value: T,
+  validator: (value: any) => value is U,
+  errorMessage: string
+): Result<U>;
+export function validate<T>(
+  value: T,
+  validator: (value: any) => boolean,
+  errorMessage: string
+): Result<T> {
+  if (validator(value)) {
+    return ok(value);
+  } else {
+    return err(new Error(errorMessage));
+  }
 }
