@@ -3,7 +3,7 @@ export class OkResult<T> {
   ok(): this is OkResult<T> {
     return true;
   }
-  map<U>(fn: (value: T) => U): Result<U> {
+  map<U>(fn: (value: T) => U): Result<U, never> {
     return ok(fn(this.value));
   }
   andThen<U>(fn: (value: T) => Result<U>): Result<U> {
@@ -18,10 +18,10 @@ export class ErrResult<E = Error> {
   ok(): this is OkResult<never> {
     return false;
   }
-  map<U>(_fn: (value: never) => U): Result<U> {
+  map<U>(_fn: (value: never) => U): Result<U, E> {
     return this as any;
   }
-  andThen<U>(_fn: (value: never) => Result<U>): Result<U> {
+  andThen<U>(_fn: (value: never) => Result<U>): Result<U, E> {
     return this as any;
   }
   unwrap(): never {
