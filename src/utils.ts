@@ -19,7 +19,7 @@ export function catchAsync<Params extends any[], R>(
   return cb(...args).then(ok, err);
 }
 
-export function collect<T>(results: Result<T>[]): Result<T[]> {
+export function collect<T, E>(results: Result<T, E>[]): Result<T[], E> {
   const res: T[] = [];
   for (const x of results) {
     if (x.ok()) {
@@ -52,7 +52,9 @@ export function successes<T>(results: Result<T>[]): T[] {
   return res;
 }
 
-export function successesAsync<T>(results: Promise<Result<T>>[]): Promise<T[]> {
+export function successesAsync<T, E>(
+  results: Promise<Result<T, E>>[]
+): Promise<T[]> {
   return Promise.all(
     results.map(
       (p): Promise<Result<T>> => fromPromise(p).then((x) => x.andThen((x) => x))
@@ -68,7 +70,13 @@ export function fromJsonRpc<T>(data: { error?: any; result?: T }): Result<T> {
   }
 }
 
-export function fromPromise<T>(promise: Promise<T>): Promise<Result<T>> {
+type PromiseError<P extends Promise<any>> = Parameters<
+  Parameters<P["catch"]>[0]
+>[0];
+
+export function fromPromise<T, P extends Promise<T>>(
+  promise: P
+): Promise<Result<T, PromiseError<P>>> {
   return promise.then(ok, err);
 }
 
