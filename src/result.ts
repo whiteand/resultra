@@ -13,8 +13,8 @@ export class OkResult<T> {
     return this.value;
   }
 }
-export class ErrResult {
-  constructor(public readonly error: Error) {}
+export class ErrResult<E = Error> {
+  constructor(public readonly error: E) {}
   ok(): this is OkResult<never> {
     return false;
   }
@@ -29,13 +29,13 @@ export class ErrResult {
   }
 }
 
-export type Result<T> = OkResult<T> | ErrResult;
+export type Result<T, E = Error> = OkResult<T> | ErrResult<E>;
 
 export function ok<T>(value: T): OkResult<T> {
   return new OkResult(value);
 }
 
-export function err(error: Error): ErrResult {
+export function err<E>(error: E): ErrResult<E> {
   return new ErrResult(error);
 }
 export function unwrapOr<T>(result: Result<T>, defaultValue: T): T {
