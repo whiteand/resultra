@@ -74,10 +74,10 @@ export function fromJsonRpc<T>(data: { error?: any; result?: T }): Result<T> {
 type AnyFunction = (...args: any[]) => any;
 
 type PromiseError<P extends Promise<any>> = P["catch"] extends AnyFunction
-  ? Parameters<Parameters<P["catch"]>[0]>[0]
+  ? Parameters<P["catch"]>[0] extends AnyFunction
+    ? Parameters<Parameters<P["catch"]>[0]>[0]
+    : unknown
   : unknown;
-
-const p = new Promise((res) => res(1));
 
 export function fromPromise<T, P extends Promise<T>>(
   promise: P,
