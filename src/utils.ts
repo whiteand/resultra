@@ -32,13 +32,13 @@ export function collect<T, E>(results: Result<T, E>[]): Result<T[], E> {
 }
 
 export function collectAsync<T>(
-  results: Promise<Result<T>>[]
+  results: Promise<Result<T>>[],
 ): Promise<Result<T[]>> {
   return Promise.all(
     results.map(
       (resultPromise): Promise<Result<T>> =>
-        fromPromise(resultPromise).then((r) => r.andThen((x: Result<T>) => x))
-    )
+        fromPromise(resultPromise).then((r) => r.andThen((x: Result<T>) => x)),
+    ),
   ).then(collect);
 }
 
@@ -53,12 +53,13 @@ export function successes<T>(results: Result<T>[]): T[] {
 }
 
 export function successesAsync<T, E>(
-  results: Promise<Result<T, E>>[]
+  results: Promise<Result<T, E>>[],
 ): Promise<T[]> {
   return Promise.all(
     results.map(
-      (p): Promise<Result<T>> => fromPromise(p).then((x) => x.andThen((x) => x))
-    )
+      (p): Promise<Result<T>> =>
+        fromPromise(p).then((x) => x.andThen((x) => x)),
+    ),
   ).then(successes);
 }
 
@@ -70,12 +71,16 @@ export function fromJsonRpc<T>(data: { error?: any; result?: T }): Result<T> {
   }
 }
 
-type PromiseError<P extends Promise<any>> = Parameters<
-  Parameters<P["catch"]>[0]
->[0];
+type AnyFunction = (...args: any[]) => any;
+
+type PromiseError<P extends Promise<any>> = P["catch"] extends AnyFunction
+  ? Parameters<Parameters<P["catch"]>[0]>[0]
+  : unknown;
+
+const p = new Promise((res) => res(1));
 
 export function fromPromise<T, P extends Promise<T>>(
-  promise: P
+  promise: P,
 ): Promise<Result<T, PromiseError<P>>> {
   return promise.then(ok, err);
 }
@@ -98,7 +103,7 @@ export function parseFloat(str: string): Result<number> {
 
 export function assert<T>(
   value: T | false | 0 | "" | null | undefined,
-  errorMessage: string
+  errorMessage: string,
 ): Result<T> {
   if (value) {
     return ok(value as T);
@@ -109,17 +114,17 @@ export function assert<T>(
 export function validate<T>(
   value: T,
   validator: (value: any) => boolean,
-  errorMessage: string
+  errorMessage: string,
 ): Result<T>;
 export function validate<T, U>(
   value: T,
   validator: (value: any) => value is U,
-  errorMessage: string
+  errorMessage: string,
 ): Result<U>;
 export function validate<T>(
   value: T,
   validator: (value: any) => boolean,
-  errorMessage: string
+  errorMessage: string,
 ): Result<T> {
   if (validator(value)) {
     return ok(value);
