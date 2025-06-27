@@ -1,6 +1,6 @@
 import { Result, err, ok } from "./result";
 
-export function catchError<Params extends any[], R>(
+export function catchError<Params extends readonly any[], R>(
   cb: (...params: Params) => R,
   ...args: Params
 ): Result<R> {
@@ -12,7 +12,7 @@ export function catchError<Params extends any[], R>(
   }
 }
 
-export function catchAsync<Params extends any[], R>(
+export function catchAsync<Params extends readonly any[], R>(
   cb: (...params: Params) => Promise<R>,
   ...args: Params
 ): Promise<Result<R>> {
@@ -31,15 +31,34 @@ export function collect<T, E>(results: Result<T, E>[]): Result<T[], E> {
   return ok(res);
 }
 
-export function collectAsync<T>(
-  results: Promise<Result<T>>[],
-): Promise<Result<T[]>> {
-  return Promise.all(
-    results.map(
-      (resultPromise): Promise<Result<T>> =>
-        fromPromise(resultPromise).then((r) => r.andThen((x: Result<T>) => x)),
-    ),
-  ).then(collect);
+export function collectAsync<T, E>(
+  results: Promise<Result<T, E>>[],
+): Promise<Result<T[], E>> {
+  return new Promise<Result<T[], E>>((resolve) => {
+    let resolved = 0
+    let rejected = false
+    const res: T[] = results.map(() => null as any)
+    const reject = (error: unknown) => {
+      if (rejected) return
+      rejected = true
+      resolve(err(error as E));
+    }
+    for (let i = 0; i < results.length; i++) {
+      results[i].then(result => {
+        if (result.ok()) {
+          resolved++
+          res[i] = result.value
+          if (resolved === results.length) {
+            resolve(ok(res));
+          }
+        } else {
+          reject(result.error)
+        }
+      }, error => {
+        reject(error)
+      })
+    }
+  })
 }
 
 export function successes<T>(results: Result<T>[]): T[] {

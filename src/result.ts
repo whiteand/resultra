@@ -1,8 +1,10 @@
 export abstract class BaseResult<T, E> {
   abstract ok(): this is OkResult<T>;
   abstract map<U>(fn: (value: T) => U): Result<U, E>;
+  abstract mapErr<U>(fn: (error: E) => U): Result<T, U>;
   abstract andThen<U, E2>(fn: (value: T) => Result<U, E2>): Result<U, E | E2>;
   abstract unwrap(): T;
+  abstract unwrapErr(): E;
 }
 
 export class OkResult<T> extends BaseResult<T, never> {
@@ -15,11 +17,17 @@ export class OkResult<T> extends BaseResult<T, never> {
   map<U>(fn: (value: T) => U): Result<U, never> {
     return ok(fn(this.value));
   }
+  mapErr<U>(_: (error: never) => U): Result<T, U> {
+    return this
+  }
   andThen<U, E2>(fn: (value: T) => Result<U, E2>): Result<U, E2> {
     return fn(this.value);
   }
   unwrap(): T {
     return this.value;
+  }
+  unwrapErr(): never {
+    throw this
   }
 }
 export class ErrResult<E = Error> extends BaseResult<any, E> {
@@ -32,11 +40,17 @@ export class ErrResult<E = Error> extends BaseResult<any, E> {
   map<U>(_fn: (value: never) => U): Result<U, E> {
     return this as any;
   }
+  mapErr<U>(fn: (error: E) => U): Result<any, U> {
+    return err(fn(this.error));
+  }
   andThen<U, E2>(_fn: (value: never) => Result<U, E2>): Result<U, E> {
     return this as any;
   }
   unwrap(): never {
     throw this.error;
+  }
+  unwrapErr(): E {
+    return this.error;
   }
 }
 
