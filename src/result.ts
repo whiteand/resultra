@@ -56,9 +56,7 @@ export class ErrResult<E = Error> extends BaseResult<any, E> {
 
 export type Result<T, E = Error> = OkResult<T> | ErrResult<E>;
 
-export function ok(): OkResult<void>;
-export function ok<const T>(value: T): OkResult<T>;
-export function ok(value?: unknown): OkResult<unknown> {
+export function ok<const T>(value: T): OkResult<T> {
   return new OkResult(value);
 }
 
